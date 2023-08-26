@@ -1,10 +1,7 @@
-use std::borrow::BorrowMut;
-
 use db::DBClient;
 use postgres::{Client, NoTls};
 
-use screen::Screen;
-use user::User;
+use screen::{Screen, ScreenType};
 
 mod account;
 mod screen;
@@ -15,7 +12,6 @@ mod console;
 
 pub struct App {
     screen: Option<Screen>,
-    logged_in_user: Option<User>,
     running: bool,
 }
 
@@ -34,7 +30,6 @@ impl App {
 
         let app = Self {
             screen,
-            logged_in_user: None,
             running: true,
         };
         app
@@ -47,8 +42,8 @@ impl App {
             let selection = console::get_input(">", "Pleas enter a valid whole number.");
 
             match selection {
-               1 => screen.navigate(screen::ScreenType::Login),
-               2 => screen.navigate(screen::ScreenType::Register),
+               1 => screen.navigate(ScreenType::Login),
+               2 => screen.navigate(ScreenType::Register),
                3 => self.running = false,
                _ => println!("The choice you entered was invalid")
             }

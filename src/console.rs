@@ -10,7 +10,7 @@ where
     loop {
         let input = get_string(prompt);
 
-        match input.trim().parse() {
+        match input.parse() {
             Ok(input) => return input,
             Err(_) => {
                 println!("{}", error_message);
@@ -29,7 +29,7 @@ pub fn get_string(prompt: &str) -> String {
         panic!("Failed to read a line, {}", e);
     }
 
-    s
+    s.trim().to_string()
 }
 
 pub fn get_date() -> NaiveDate {

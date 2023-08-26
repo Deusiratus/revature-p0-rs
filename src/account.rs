@@ -1,5 +1,6 @@
+#[derive(Clone)]
 pub struct Account {
-    id: usize,
-    name: String,
-    balance: f64,
+    pub id: i32,
+    pub name: String,
+    pub balance: f64,
 }
