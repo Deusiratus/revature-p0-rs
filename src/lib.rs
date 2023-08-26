@@ -5,7 +5,6 @@ use screen::{Screen, ScreenType};
 
 mod account;
 mod screen;
-mod transaction;
 mod user;
 mod db;
 mod console;

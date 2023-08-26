@@ -104,8 +104,7 @@ impl Screen {
             // get to this screen without logging in
             None => {
                 println!("Please log in first");
-                self.navigate(ScreenType::Login);
-                return;
+                return self.navigate(ScreenType::Login);
             }
         };
 
@@ -137,7 +136,7 @@ impl Screen {
                 for acc in &accounts[..] {
                     println!("Account ID: {}", acc.id);
                     println!("Name: {}", acc.name);
-                    println!("Balance: {}", acc.balance);
+                    println!("Balance: ${:.2}", acc.balance);
                     println!("{}", "=".repeat(12));
                 }
 
@@ -202,13 +201,12 @@ impl Screen {
         println!("{}", account.name);
         println!("=============================");
         println!("Current account: {}", account.name);
-        println!("Current Balance: {}", account.balance);
+        println!("Current Balance: ${:.2}", account.balance);
         println!("Please choose an option");
         println!("1) Deposit funds");
         println!("2) Withdraw funds");
         println!("3) Make a transfer");
-        println!("4) View transaction history for this account");
-        println!("5) Back to dashboard");
+        println!("4) Back to dashboard");
 
         let selection = console::get_input("<", "Please enter a valid whole number");
 
@@ -217,7 +215,7 @@ impl Screen {
                 let amount: f64 = console::get_input("Enter amount:", "Please enter a valid decimal number");
                 account.balance += amount;
                 self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
-                println!("Your new balance is: ${}", account.balance);
+                println!("Your new balance is: ${:.2}", account.balance);
                 self.navigate(ScreenType::Account);
             },
             2 => {
@@ -225,7 +223,7 @@ impl Screen {
 
                 account.balance -= amount;
                 self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
-                println!("Your new balance is: ${}", account.balance);
+                println!("Your new balance is: ${:.2}", account.balance);
                 self.navigate(ScreenType::Account);
             },
             3 => {
@@ -243,12 +241,9 @@ impl Screen {
                 account.balance -= amount;
                 self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
                 self.db_client.add_balance(amount, recipient).expect("Problem making transfer");
-            },
-            4 => {
-                todo!()
+                self.navigate(ScreenType::Account);
             },
             _ => {
-                println!("Invalid choice");
                 self.navigate(ScreenType::Dashboard);
             }
         }
