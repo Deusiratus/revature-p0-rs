@@ -2,10 +2,9 @@ use std::{io, str::FromStr};
 
 use chrono::NaiveDate;
 
-
 pub fn get_input<T>(prompt: &str, error_message: &str) -> T
 where
-    T: FromStr
+    T: FromStr,
 {
     loop {
         let input = get_string(prompt);
@@ -41,7 +40,7 @@ pub fn get_date() -> NaiveDate {
             Err(_) => {
                 println!("Please enter a valid date in format YYYY/mm/dd");
                 continue;
-            },
+            }
         }
     }
 }

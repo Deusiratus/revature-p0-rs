@@ -1,4 +1,4 @@
-use crate::{db::DBClient, console, user::User, account::Account};
+use crate::{account::Account, console, db::DBClient, user::User};
 
 pub struct Screen {
     db_client: DBClient,
@@ -6,7 +6,7 @@ pub struct Screen {
     rendered: bool,
     logged_in_user: Option<User>,
     active_account: Option<Account>,
-    user_accounts: Option<Vec<Account>>
+    user_accounts: Option<Vec<Account>>,
 }
 pub enum ScreenType {
     Account,
@@ -51,11 +51,11 @@ impl Screen {
     }
 
     fn show_welcome_screen() {
-       println!("Welcome to the Bank of Rust!");
-       println!("Please choose an option");
-       println!("1) Login");
-       println!("2) Register");
-       println!("3) Exit");
+        println!("Welcome to the Bank of Rust!");
+        println!("Please choose an option");
+        println!("1) Login");
+        println!("2) Register");
+        println!("3) Exit");
     }
 
     fn show_register_screen(&mut self) {
@@ -64,22 +64,22 @@ impl Screen {
         let username = console::get_string("Enter a username:");
         let password = console::get_string("Enter a password: ");
         let email = console::get_string("Enter your email: ");
-        let first_name  = console::get_string("Enter first name:");
+        let first_name = console::get_string("Enter first name:");
         let last_name = console::get_string("Enter your last name: ");
         let birthday = console::get_date();
         let joined_date = chrono::offset::Local::now();
         let age: i32 = console::get_input("Enter your age: ", "Please enter a valid whole number");
 
-        let user = User { 
-            id: 0, 
-            username, 
-            password, 
-            email, 
-            first_name, 
-            last_name, 
-            birthday, 
-            joined_date, 
-            age
+        let user = User {
+            id: 0,
+            username,
+            password,
+            email,
+            first_name,
+            last_name,
+            birthday,
+            joined_date,
+            age,
         };
 
         if let Err(str) = user.is_valid() {
@@ -97,7 +97,10 @@ impl Screen {
         let username = console::get_string("Enter your username:");
         let password = console::get_string("Enter your password:");
 
-        if let Ok(user) = self.db_client.find_by_username_and_password(&username, &password) {
+        if let Ok(user) = self
+            .db_client
+            .find_by_username_and_password(&username, &password)
+        {
             println!("Login successful!");
             self.logged_in_user = Some(user);
             self.navigate(ScreenType::Dashboard);
@@ -155,7 +158,10 @@ impl Screen {
                 let selected_account = loop {
                     let name = console::get_string("Enter an account name");
 
-                    let account = self.user_accounts.as_ref().unwrap()
+                    let account = self
+                        .user_accounts
+                        .as_ref()
+                        .unwrap()
                         .iter()
                         .find(|acc| acc.name == name);
 
@@ -173,14 +179,14 @@ impl Screen {
             }
             2 => {
                 let name = console::get_string("Enter an account name");
-                let starting_balance = console::get_input("Enter a starting balance", 
-                    "Please enter a valid decimal number");
-                
-                let created_account = self.db_client.open_account(
-                    &name, 
-                    starting_balance,
-                    user.id(),
+                let starting_balance = console::get_input(
+                    "Enter a starting balance",
+                    "Please enter a valid decimal number",
                 );
+
+                let created_account =
+                    self.db_client
+                        .open_account(&name, starting_balance, user.id());
 
                 let created_account = match created_account {
                     Ok(account) => account,
@@ -193,9 +199,7 @@ impl Screen {
                 self.active_account = Some(created_account);
                 self.navigate(ScreenType::Account)
             }
-            3 => {
-                self.navigate(ScreenType::Welcome)
-            }
+            3 => self.navigate(ScreenType::Welcome),
             _ => {
                 println!("Invalid choice");
                 self.navigate(ScreenType::Dashboard)
@@ -204,7 +208,8 @@ impl Screen {
     }
 
     fn show_account_screen(&mut self) {
-        let account = self.active_account
+        let account = self
+            .active_account
             .as_mut()
             .expect("Account should be present");
         println!("{}", account.name);
@@ -221,23 +226,31 @@ impl Screen {
 
         match selection {
             1 => {
-                let amount: f64 = console::get_input("Enter amount:", "Please enter a valid decimal number");
+                let amount: f64 =
+                    console::get_input("Enter amount:", "Please enter a valid decimal number");
                 account.balance += amount;
-                self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
+                self.db_client
+                    .save_account(account.id, account.balance)
+                    .expect("Problem saving account");
                 println!("Your new balance is: ${:.2}", account.balance);
                 self.navigate(ScreenType::Account)
-            },
+            }
             2 => {
                 let amount = get_f64_in_bound(account.balance);
 
                 account.balance -= amount;
-                self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
+                self.db_client
+                    .save_account(account.id, account.balance)
+                    .expect("Problem saving account");
                 println!("Your new balance is: ${:.2}", account.balance);
                 self.navigate(ScreenType::Account)
-            },
+            }
             3 => {
                 let recipient = loop {
-                    let id = console::get_input("Enter an account id:", "Please enter a valid whole number");
+                    let id = console::get_input(
+                        "Enter an account id:",
+                        "Please enter a valid whole number",
+                    );
 
                     if !self.db_client.account_exists(id) {
                         println!("No account with that id exists");
@@ -248,13 +261,15 @@ impl Screen {
 
                 let amount = get_f64_in_bound(account.balance);
                 account.balance -= amount;
-                self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
-                self.db_client.add_balance(amount, recipient).expect("Problem making transfer");
+                self.db_client
+                    .save_account(account.id, account.balance)
+                    .expect("Problem saving account");
+                self.db_client
+                    .add_balance(amount, recipient)
+                    .expect("Problem making transfer");
                 self.navigate(ScreenType::Account)
-            },
-            _ => {
-                self.navigate(ScreenType::Dashboard)
             }
+            _ => self.navigate(ScreenType::Dashboard),
         }
     }
 }
