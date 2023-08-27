@@ -2,7 +2,7 @@ use chrono::prelude::*;
 
 #[derive(Debug)]
 pub struct User {
-    id: i32,
+    pub id: i32,
     pub username: String,
     pub password: String,
     pub email: String,
@@ -15,30 +15,6 @@ pub struct User {
 
 
 impl User {
-    pub fn new(
-        id: i32,
-        username: String,
-        password: String,
-        email: String,
-        first_name: String,
-        last_name: String,
-        birthday: NaiveDate,
-        joined_date: DateTime<Local>,
-        age: i32
-    ) -> Self {
-        Self {
-            id,
-            username,
-            password,
-            email,
-            first_name,
-            last_name,
-            birthday,
-            joined_date,
-            age
-        }
-    }
-
     pub fn is_valid(&self) -> Result<(), &'static str> {
 
         if self.first_name.trim().is_empty() || self.first_name.len() > 50 { 

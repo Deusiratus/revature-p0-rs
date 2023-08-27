@@ -38,28 +38,26 @@ impl DBClient {
         password: &str,
     ) -> Result<User, &'static str> {
         match self.client.query(
-            "select * from revature_p0.users where username = $1 and password = $2", 
-            &[&username, &password]
+            "select * from revature_p0.users where username = $1 and password = $2",
+            &[&username, &password],
         ) {
-            Ok(rs) => match rs.iter().next() {
-                Some(row) => {
-                    return Ok(User::new(
-                        row.get(0),
-                        row.get(1),
-                        row.get(2),
-                        row.get(3),
-                        row.get(4),
-                        row.get(5),
-                        row.get(6),
-                        row.get(7),
-                        row.get(8),
-                    ));
-                }
-                None => return Err("No user found with supplied credentials"),
+            Ok(rs) => match rs.first() {
+                Some(row) => Ok(User {
+                    id: row.get(0),
+                    username: row.get(1),
+                    password: row.get(2),
+                    email: row.get(3),
+                    first_name: row.get(4),
+                    last_name: row.get(5),
+                    birthday: row.get(6),
+                    joined_date: row.get(7),
+                    age: row.get(8),
+                }),
+                None => Err("No user found with supplied credentials"),
             },
             Err(e) => {
                 eprintln!("Problem with database: {e}");
-                return Err("There was a problem");
+                Err("There was a problem")
             }
         }
     }
@@ -73,23 +71,27 @@ impl DBClient {
                 join revature_p0.users usr
                 on usr.user_id = uam.user_id
                 where usr.user_id = $1";
-        
+
         let result = match self.client.query(query, &[&id]) {
             Ok(vec) => vec,
-            Err(e) => return Err(format!("{e}"))
+            Err(e) => return Err(format!("{e}")),
         };
 
         let accounts = result
             .iter()
-            .map(|row| Account{ id: row.get(0), name: row.get(1), balance: row.get(2) })
+            .map(|row| Account {
+                id: row.get(0),
+                name: row.get(1),
+                balance: row.get(2),
+            })
             .collect::<Vec<Account>>();
 
         Ok(accounts)
     }
 
     pub fn open_account(
-        &mut self, 
-        name: &str, 
+        &mut self,
+        name: &str,
         starting_balance: f64,
         user_id: i32,
     ) -> Result<Account, &'static str> {
@@ -101,31 +103,35 @@ impl DBClient {
             Err(_) => return Err("Something went wrong in the database")
         };
 
-        let account = match query.iter().next() {
-            Some(row) => Account { id: row.get(0), name: name.to_string(), balance: starting_balance },
+        let account = match query.first() {
+            Some(row) => Account {
+                id: row.get(0),
+                name: name.to_string(),
+                balance: starting_balance,
+            },
             None => return Err("No results returned"),
         };
 
-        let _link_query = match self.client.execute(
-            "insert into revature_p0.user_account_map(user_id, account_id) values ($1, $2)", 
-            &[&user_id, &account.id]
+        match self.client.execute(
+            "insert into revature_p0.user_account_map(user_id, account_id) values ($1, $2)",
+            &[&user_id, &account.id],
         ) {
             Ok(_) => (),
-            Err(_) => return Err("failed to link account")
+            Err(_) => return Err("failed to link account"),
         };
 
         Ok(account)
     }
 
     pub fn save_account(&mut self, id: i32, blalance: f64) -> Result<(), String> {
-        let _query = match self.client.execute(
-            "update revature_p0.account set balance = $1 where account_id = $2", 
+        match self.client.execute(
+            "update revature_p0.account set balance = $1 where account_id = $2",
             &[&blalance, &id],
         ) {
             Ok(_) => (),
             Err(e) => {
                 println!("{e}");
-                return Err(format!("{e}"))
+                return Err(format!("{e}"));
             }
         };
 
@@ -135,9 +141,9 @@ impl DBClient {
     pub fn add_balance(&mut self, balance: f64, recipient: i32) -> Result<(), String> {
         let query = "update revature_p0.account set balance = balance + $1 where account_id = $2";
 
-        let _query = match self.client.execute(query, &[&balance, &recipient]) {
+        match self.client.execute(query, &[&balance, &recipient]) {
             Ok(_) => (),
-            Err(e) => return Err(format!("{e}"))
+            Err(e) => return Err(format!("{e}")),
         };
 
         Ok(())
@@ -153,7 +159,7 @@ impl DBClient {
                 return false;
             }
         };
-        
+
         result.get::<usize, i64>(0) != 0
     }
 }

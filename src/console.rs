@@ -36,7 +36,7 @@ pub fn get_date() -> NaiveDate {
     loop {
         let input: String = get_string("Enter your birthday (YYYY/mm/dd): ");
 
-        match NaiveDate::parse_from_str(&input.trim(), "%Y/%m/%d") {
+        match NaiveDate::parse_from_str(input.trim(), "%Y/%m/%d") {
             Ok(date) => return date,
             Err(_) => {
                 println!("Please enter a valid date in format YYYY/mm/dd");

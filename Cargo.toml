@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 postgres = { version = "0.19.6", features = ["with-chrono-0_4"] }
 chrono = "0.4.26"
+thiserror = "1.0.47"

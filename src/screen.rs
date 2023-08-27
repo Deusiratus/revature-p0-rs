@@ -70,7 +70,17 @@ impl Screen {
         let joined_date = chrono::offset::Local::now();
         let age: i32 = console::get_input("Enter your age: ", "Please enter a valid whole number");
 
-        let user = User::new(0, username, password, email, first_name, last_name, birthday, joined_date, age);
+        let user = User { 
+            id: 0, 
+            username, 
+            password, 
+            email, 
+            first_name, 
+            last_name, 
+            birthday, 
+            joined_date, 
+            age
+        };
 
         if let Err(str) = user.is_valid() {
             println!("{}", str);
@@ -79,7 +89,7 @@ impl Screen {
 
         self.db_client.register_user(&user);
 
-        self.navigate(ScreenType::Login);
+        self.navigate(ScreenType::Login)
     }
 
     fn login_user(&mut self) {
@@ -130,7 +140,7 @@ impl Screen {
 
                 if accounts.is_empty() {
                     println!("You have no registered accounts! Please create one first.");
-                    return self.navigate(ScreenType::Dashboard);
+                    self.navigate(ScreenType::Dashboard)
                 }
 
                 for acc in &accounts[..] {
@@ -147,8 +157,7 @@ impl Screen {
 
                     let account = self.user_accounts.as_ref().unwrap()
                         .iter()
-                        .filter(|acc| acc.name == name)
-                        .next();
+                        .find(|acc| acc.name == name);
 
                     match account {
                         Some(account) => break account,
@@ -160,7 +169,7 @@ impl Screen {
                 };
 
                 self.active_account = Some(selected_account.clone());
-                return self.navigate(ScreenType::Account);
+                self.navigate(ScreenType::Account)
             }
             2 => {
                 let name = console::get_string("Enter an account name");
@@ -182,14 +191,14 @@ impl Screen {
                 };
 
                 self.active_account = Some(created_account);
-                return self.navigate(ScreenType::Account);
+                self.navigate(ScreenType::Account)
             }
             3 => {
-                return self.navigate(ScreenType::Welcome);
+                self.navigate(ScreenType::Welcome)
             }
             _ => {
                 println!("Invalid choice");
-                return self.navigate(ScreenType::Dashboard);
+                self.navigate(ScreenType::Dashboard)
             }
         }
     }
@@ -216,7 +225,7 @@ impl Screen {
                 account.balance += amount;
                 self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
                 println!("Your new balance is: ${:.2}", account.balance);
-                self.navigate(ScreenType::Account);
+                self.navigate(ScreenType::Account)
             },
             2 => {
                 let amount = get_f64_in_bound(account.balance);
@@ -224,7 +233,7 @@ impl Screen {
                 account.balance -= amount;
                 self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
                 println!("Your new balance is: ${:.2}", account.balance);
-                self.navigate(ScreenType::Account);
+                self.navigate(ScreenType::Account)
             },
             3 => {
                 let recipient = loop {
@@ -241,10 +250,10 @@ impl Screen {
                 account.balance -= amount;
                 self.db_client.save_account(account.id, account.balance).expect("Problem saving account");
                 self.db_client.add_balance(amount, recipient).expect("Problem making transfer");
-                self.navigate(ScreenType::Account);
+                self.navigate(ScreenType::Account)
             },
             _ => {
-                self.navigate(ScreenType::Dashboard);
+                self.navigate(ScreenType::Dashboard)
             }
         }
     }

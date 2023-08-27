@@ -27,11 +27,10 @@ impl App {
         };
         let screen = Some(Screen::new(DBClient::new(client)));
 
-        let app = Self {
+        Self {
             screen,
             running: true,
-        };
-        app
+        }
     }
 
     pub fn run(&mut self) {
@@ -52,5 +51,11 @@ impl App {
                 break;
             }
         }
+    }
+}
+
+impl Default for App {
+    fn default() -> Self {
+        Self::new()
     }
 }
